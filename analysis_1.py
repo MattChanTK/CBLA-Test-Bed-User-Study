@@ -93,7 +93,13 @@ print("1. Prescripted Mode: on during first half vs one during second half")
 print("--- H0: Average interest level for prescripted mode is the same regardless if it is on first or second.")
 # Alternate Hypothesis
 print("--- H1: Average interest level for prescripted mode is different depending on whether it is on first or second.")
-t_stat, p_val = stats.ttest_ind(prescripted_first_avg, prescripted_second_avg, equal_var=False)
+# Test Data
+sample_1 = prescripted_first_avg
+sample_2 = prescripted_second_avg
+print("Sample 1:  ", sample_1)
+print("Sample 2:  ", sample_2)
+# Analysis
+t_stat, p_val = stats.ttest_ind(sample_1, sample_2, equal_var=False)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
@@ -106,7 +112,13 @@ print("2. CBLA Mode: on during first half vs one during second half")
 print("--- H0: Average interest level for CBLA mode is the same regardless if it is on first or second.")
 # Alternate Hypothesis
 print("--- H1: Average interest level for CBLA mode is different depending on whether it is on first or second.")
-t_stat, p_val = stats.ttest_ind(cbla_first_avg, cbla_second_avg, equal_var=False)
+# Test Data
+sample_1 = cbla_first_avg
+sample_2 = cbla_second_avg
+print("Sample 1:  ", sample_1)
+print("Sample 2:  ", sample_2)
+# Analysis
+t_stat, p_val = stats.ttest_ind(sample_1, sample_2, equal_var=False)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
@@ -119,7 +131,13 @@ print("3. Both Modes: on during first half vs one during second half")
 print("--- H0: Average interest level is the same regardless if it is on first or second.")
 # Alternate Hypothesis
 print("--- H1: Average interest level is different depending on whether it is on first or second.")
-t_stat, p_val = stats.ttest_ind(cbla_first_avg+prescripted_first_avg, cbla_second_avg+prescripted_second_avg, equal_var=False)
+# Test Data
+sample_1 = cbla_first_avg+prescripted_first_avg
+sample_2 = cbla_second_avg+prescripted_second_avg
+print("Sample 1:  ", sample_1)
+print("Sample 2:  ", sample_2)
+# Analysis
+t_stat, p_val = stats.ttest_ind(sample_1, sample_2, equal_var=False)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
@@ -132,7 +150,13 @@ print("4. CBLA Mode vs. Prescripted Mode: on during first half")
 print("--- H0: Average interest level for CBLA mode is the same as Prescripted mode when it is on first.")
 # Alternate Hypothesis
 print("--- H1: Average interest level for CBLA mode is different from Prescripted mode when it is on first.")
-t_stat, p_val = stats.ttest_ind(prescripted_first_avg, cbla_first_avg, equal_var=False)
+# Test Data
+sample_1 = prescripted_first_avg
+sample_2 = cbla_first_avg
+print("Sample 1:  ", sample_1)
+print("Sample 2:  ", sample_2)
+# Analysis
+t_stat, p_val = stats.ttest_ind(sample_1, sample_2, equal_var=False)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
@@ -145,7 +169,13 @@ print("5. CBLA Mode vs. Prescripted Mode: on during second half")
 print("--- H0: Average interest level for CBLA mode is the same as Prescripted mode when it is on second.")
 # Alternate Hypothesis
 print("--- H1: Average interest level for CBLA mode is different from Prescripted mode when it is on second.")
-t_stat, p_val = stats.ttest_ind(prescripted_second_avg, cbla_second_avg, equal_var=False)
+# Test Data
+sample_1 = prescripted_second_avg
+sample_2 = cbla_second_avg
+print("Sample 1:  ", sample_1)
+print("Sample 2:  ", sample_2)
+# Analysis
+t_stat, p_val = stats.ttest_ind(sample_1, sample_2, equal_var=False)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
@@ -158,7 +188,13 @@ print("6. CBLA Mode vs. Prescripted Mode: on during the whole trial")
 print("--- H0: Average interest level for CBLA mode is the same as Prescripted mode.")
 # Alternate Hypothesis
 print("--- H1: Average interest level for CBLA mode is different from Prescripted mode.")
-t_stat, p_val = stats.ttest_ind(prescripted_first_avg + prescripted_second_avg, cbla_first_avg + cbla_second_avg, equal_var=False)
+# Test Data
+sample_1 = prescripted_first_avg + prescripted_second_avg
+sample_2 = cbla_first_avg + cbla_second_avg
+print("Sample 1:  ", sample_1)
+print("Sample 2:  ", sample_2)
+# Analysis
+t_stat, p_val = stats.ttest_ind(sample_1, sample_2, equal_var=False)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
@@ -176,7 +212,13 @@ print("1. CBLA Mode vs. Prescripted Mode when prescripted is on first")
 print("--- H0: Participants find that CBLA Mode is equally as interesting as prescripted mode when prescripted Mode is on first")
 # Alternate Hypothesis
 print("--- H1: Participants find that CBLA Mode is not equally as interesting as prescripted mode when prescripted Mode is on first")
-t_stat, p_val = stats.ttest_rel(prescripted_first_avg, cbla_second_avg)
+# Test Data
+sample_1 = prescripted_first_avg
+sample_2 = cbla_second_avg
+print("Sample 1:  ", sample_1)
+print("Sample 2:  ", sample_2)
+# Analysis
+t_stat, p_val = stats.ttest_rel(sample_1, sample_2)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
@@ -189,7 +231,13 @@ print("2. CBLA Mode vs. Prescripted Mode when CBLA is on first")
 print("--- H0: Participants find that CBLA Mode is equally as interesting as prescripted mode when CBLA Mode is on first")
 # Alternate Hypothesis
 print("--- H1: Participants find that CBLA Mode is not equally as interesting as prescripted modee more interesting when CBLA Mode is on first")
-t_stat, p_val = stats.ttest_rel(cbla_first_avg, prescripted_second_avg)
+# Test Data
+sample_1 = cbla_first_avg
+sample_2 = prescripted_second_avg
+print("Sample 1:  ", sample_1)
+print("Sample 2:  ", sample_2)
+# Analysis
+t_stat, p_val = stats.ttest_rel(sample_1, sample_2)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
@@ -202,7 +250,13 @@ print("3. CBLA Mode vs. Prescripted Mode when CBLA is on first")
 print("--- H0: Participants find that CBLA Mode is equally as interesting as prescripted mode")
 # Alternate Hypothesis
 print("--- H1: Participants find that CBLA Mode is not equally as interesting as prescripted mode")
-t_stat, p_val = stats.ttest_rel(cbla_first_avg+prescripted_first_avg, prescripted_second_avg+cbla_second_avg)
+# Test Data
+sample_1 = cbla_first_avg+prescripted_first_avg
+sample_2 = prescripted_second_avg+cbla_second_avg
+print("Sample 1:  ", sample_1)
+print("Sample 2:  ", sample_2)
+# Analysis
+t_stat, p_val = stats.ttest_rel(sample_1, sample_2)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
