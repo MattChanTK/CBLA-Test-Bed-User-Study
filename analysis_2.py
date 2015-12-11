@@ -28,8 +28,8 @@ trial_data_dir = "user_study_excel_data"
 os.chdir(trial_data_dir)
 
 # open the workbooks containing the data
-study_id = 2
-win_size = 10.0
+study_id = 1
+win_size = 1.0
 
 # first, open the activation workbook
 activation_book_file_name = "study_%d (%.2fs).xls" % (study_id, win_size)
@@ -103,8 +103,15 @@ snapshot_id = 0
 for row_id in range(ACTIVATION_DATA_ROW, len(activation_sheet)):
     if activation_sheet[row_id][ACTIVATION_TIME_COL] > snapshot_win_time[snapshot_id]:
         cell_array = activation_sheet[row_id-1][ACTIVATION_DATA_COL:]
+        # replace non-numerical values with 0
+        for id, cell in enumerate(cell_array):
+            if not isinstance(cell, (float, int)):
+                cell_array[id] = 0.0
         sample_activation_all.append(cell_array)
         snapshot_id += 1
+
+    if snapshot_id >= len(snapshot_win_time):
+        break
 
 # 2. Calculate the Total average activation for each sample point
 avg_sample_activation_all = []
@@ -120,8 +127,12 @@ activation_win_time = []
 avg_activation_all = []
 for row_id in range(ACTIVATION_DATA_ROW, len(activation_sheet)):
     activation_win_time.append(activation_sheet[row_id][ACTIVATION_TIME_COL])
-    cell_array = tuple(activation_sheet[row_id][ACTIVATION_DATA_COL:])
-    avg_activation_all.append(np.mean(cell_array))
+    cell_array = activation_sheet[row_id][ACTIVATION_DATA_COL:]
+    # replace non-numerical values with 0
+    for id, cell in enumerate(cell_array):
+        if not isinstance(cell, (float, int)):
+            cell_array[id] = 0.0
+    avg_activation_all.append(np.mean(tuple(cell_array)))
 
 # 5. plot them
 plt.plot(snapshot_win_time, avg_sample_activation_all, "-ro", ms=10, label="Sample Avg Activation (for all Nodes)")
