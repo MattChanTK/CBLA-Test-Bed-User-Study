@@ -29,7 +29,7 @@ os.chdir(trial_data_dir)
 
 # open the workbooks containing the data
 study_id = 1
-win_size = 1.0
+win_size = 10.0
 
 # first, open the activation workbook
 activation_book_file_name = "study_%d (%.2fs).xls" % (study_id, win_size)
@@ -101,12 +101,27 @@ for row_id in range(SNAPSHOT_DATA_ROW, len(snapshot_sheet)):
 sample_activation_all = []
 snapshot_id = 0
 for row_id in range(ACTIVATION_DATA_ROW, len(activation_sheet)):
-    if activation_sheet[row_id][ACTIVATION_TIME_COL] > snapshot_win_time[snapshot_id]:
-        cell_array = activation_sheet[row_id-1][ACTIVATION_DATA_COL:]
-        # replace non-numerical values with 0
+    if(snapshot_id ==7):
+        pass
+    if activation_sheet[row_id][ACTIVATION_TIME_COL] + win_size >= snapshot_win_time[snapshot_id]:
+        # cell array before the sample
+        cell_array_0 = activation_sheet[row_id][ACTIVATION_DATA_COL:]
+        # cell array containing the sample
+        try:
+            cell_array = activation_sheet[row_id+1][ACTIVATION_DATA_COL:]
+        except IndexError:
+            cell_array = cell_array_0
+
         for id, cell in enumerate(cell_array):
+            # replace non-numerical values with 0
             if not isinstance(cell, (float, int)):
                 cell_array[id] = 0.0
+            if not isinstance(cell_array_0[id], (float, int)):
+                cell_array_0[id] = 0.0
+
+            # taking average of the value before and during the sample
+            cell_array[id] = np.mean((cell_array[id], cell_array_0[id]))
+
         sample_activation_all.append(cell_array)
         snapshot_id += 1
 
@@ -127,14 +142,17 @@ activation_win_time = []
 avg_activation_all = []
 for row_id in range(ACTIVATION_DATA_ROW, len(activation_sheet)):
     activation_win_time.append(activation_sheet[row_id][ACTIVATION_TIME_COL])
-    cell_array = activation_sheet[row_id][ACTIVATION_DATA_COL:]
+    cell_array_0 = activation_sheet[row_id][ACTIVATION_DATA_COL:]
     # replace non-numerical values with 0
-    for id, cell in enumerate(cell_array):
+    for id, cell in enumerate(cell_array_0):
         if not isinstance(cell, (float, int)):
-            cell_array[id] = 0.0
-    avg_activation_all.append(np.mean(tuple(cell_array)))
+            cell_array_0[id] = 0.0
+    avg_activation_all.append(np.mean(tuple(cell_array_0)))
 
-# 5. plot them
+
+# 6. plot them
+print(snapshot_win_time)
+print(avg_sample_activation_all)
 plt.plot(snapshot_win_time, avg_sample_activation_all, "-ro", ms=10, label="Sample Avg Activation (for all Nodes)")
 plt.plot(activation_win_time, avg_activation_all, "-b", label="Avg Activation (for all Nodes)")
 plt.plot(snapshot_win_time, sample_interest_level, "-go", ms=10, label="Sample Interest Level")
