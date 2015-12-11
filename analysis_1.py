@@ -1,5 +1,5 @@
 __author__ = 'Matthew'
-# This analysis performs ANOVA on the survey data
+# This analysis performs analysis on the survey data
 
 import openpyxl as pyxl
 import os
@@ -245,7 +245,7 @@ else:
     print("H0 rejected.\n")
 
 # prescripted vs cbla: for both prescripted first and cbla first
-print("3. CBLA Mode vs. Prescripted Mode when CBLA is on first")
+print("3. CBLA Mode vs. Prescripted Mode")
 # Null Hypothesis
 print("--- H0: Participants find that CBLA Mode is equally as interesting as prescripted mode")
 # Alternate Hypothesis
