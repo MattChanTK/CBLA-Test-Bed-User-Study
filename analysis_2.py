@@ -1,6 +1,7 @@
 __author__ = 'Matthew'
 
 import xlrd
+import openpyxl as pyxl
 import csv
 import os
 import glob
@@ -27,7 +28,7 @@ trial_data_dir = "user_study_excel_data"
 os.chdir(trial_data_dir)
 
 # open the workbooks containing the data
-study_id = 1
+study_id = 2
 win_size = 10.0
 
 # first, open the activation workbook
@@ -54,6 +55,24 @@ with open(glob.glob("cbla*.csv")[0]) as file:
     for row in snapshot_reader:
         snapshot_sheet.append(row)
 
+# third, read in the xlsx containing the survey data
+os.chdir(data_root_dir)
+
+# open the workbook containing the data
+study_book_file_name = "user_study_dec_7_2015.xlsx"
+study_book = pyxl.load_workbook(study_book_file_name)
+
+# open the survey sheet
+interest_sheet_raw = study_book.get_sheet_by_name('Interest Level')
+
+# convert cell to array
+interest_sheet = [None]*interest_sheet_raw.get_highest_row()
+for row_id in range(interest_sheet_raw.get_highest_row()):
+    row_data = [None]*interest_sheet_raw.get_highest_column()
+    for col_id in range(interest_sheet_raw.get_highest_column()):
+        row_data[col_id] = interest_sheet_raw.cell(row=row_id+1, column=col_id+1).value
+    interest_sheet[row_id] = row_data
+
 # Specifying indices for the Snapshot sheet
 SNAPSHOT_DATA_ROW = 1
 SNAPSHOT_CURR_TIME_COL = 1
@@ -62,6 +81,8 @@ TRIAL_START_TIME_COL = 0
 ACTIVATION_DATA_ROW = 2
 ACTIVATION_DATA_COL = 1
 ACTIVATION_TIME_COL = 0
+INTEREST_DATA_ROW = 1
+INTEREST_DATA_COL = 2
 
 # 1. Acquire the activation values close to the sample points
 
@@ -89,21 +110,25 @@ for row_id in range(ACTIVATION_DATA_ROW, len(activation_sheet)):
 avg_sample_activation_all = []
 for sample_active_level in sample_activation_all:
     avg_sample_activation_all.append(np.mean(sample_active_level))
-print(avg_sample_activation_all)
 
-# 3. Compute average activation for all data points in activation sheet
+# 3. Computer the interest level for each sample point (scaled)
+sample_interest_level = interest_sheet[study_id][INTEREST_DATA_COL:]
+sample_interest_level = [level/45 for level in sample_interest_level]
+
+# 4. Compute average activation for all data points in activation sheet
 activation_win_time = []
 avg_activation_all = []
 for row_id in range(ACTIVATION_DATA_ROW, len(activation_sheet)):
     activation_win_time.append(activation_sheet[row_id][ACTIVATION_TIME_COL])
     cell_array = tuple(activation_sheet[row_id][ACTIVATION_DATA_COL:])
     avg_activation_all.append(np.mean(cell_array))
-print(avg_activation_all)
 
-
-# 4. plot it
-plt.plot(snapshot_win_time, avg_sample_activation_all, "-ro", ms=10)
-plt.plot(activation_win_time, avg_activation_all)
+# 5. plot them
+plt.plot(snapshot_win_time, avg_sample_activation_all, "-ro", ms=10, label="Sample Avg Activation (for all Nodes)")
+plt.plot(activation_win_time, avg_activation_all, "-b", label="Avg Activation (for all Nodes)")
+plt.plot(snapshot_win_time, sample_interest_level, "-go", ms=10, label="Sample Interest Level")
+plt.xlabel("Time (s)")
+plt.legend(bbox_to_anchor=(1.05, 1), loc=5, )
 plt.show()
 
 # return back to where the program was executed
