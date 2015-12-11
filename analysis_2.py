@@ -101,8 +101,7 @@ for row_id in range(SNAPSHOT_DATA_ROW, len(snapshot_sheet)):
 sample_activation_all = []
 snapshot_id = 0
 for row_id in range(ACTIVATION_DATA_ROW, len(activation_sheet)):
-    if(snapshot_id ==7):
-        pass
+
     if activation_sheet[row_id][ACTIVATION_TIME_COL] + win_size >= snapshot_win_time[snapshot_id]:
         # cell array before the sample
         cell_array_0 = activation_sheet[row_id][ACTIVATION_DATA_COL:]
@@ -142,12 +141,12 @@ activation_win_time = []
 avg_activation_all = []
 for row_id in range(ACTIVATION_DATA_ROW, len(activation_sheet)):
     activation_win_time.append(activation_sheet[row_id][ACTIVATION_TIME_COL])
-    cell_array_0 = activation_sheet[row_id][ACTIVATION_DATA_COL:]
+    cell_array = activation_sheet[row_id][ACTIVATION_DATA_COL:]
     # replace non-numerical values with 0
-    for id, cell in enumerate(cell_array_0):
+    for id, cell in enumerate(cell_array):
         if not isinstance(cell, (float, int)):
-            cell_array_0[id] = 0.0
-    avg_activation_all.append(np.mean(tuple(cell_array_0)))
+            cell_array[id] = 0.0
+    avg_activation_all.append(np.mean(tuple(cell_array)))
 
 
 # 6. plot them
