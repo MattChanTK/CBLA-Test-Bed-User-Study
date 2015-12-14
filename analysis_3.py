@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as plt_font
 import numpy as np
 from scipy import stats
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 import save_figure
 from test_bed_spatial_map import NodeSpatialMap
 
@@ -33,6 +33,9 @@ print("Analysis Window = %2.fs" % (win_size*sample_win_num))
 node_map = NodeSpatialMap()
 node_map.build_cbla_test_bed_node_map()
 node_map.build_cbla_test_bed_grid_map()
+
+# instantiate the dict of data for all studies
+correlation_stats = defaultdict(list)
 
 # open the workbooks containing the data
 for study_id in range(1, 11):
@@ -276,16 +279,18 @@ for study_id in range(1, 11):
 
     # 6 Computer Pearson Correlations
     print("Pearson Correlation to Interest Level")
-    print("======================")
+    print("========================================")
 
     # 6 a. Compute the Pearson correlation between interest level and average sample average activation level
 
     pearson_correlation = stats.pearsonr(sample_interest_level[:len(sample_avg_activation_avg_all_nodes)], sample_avg_activation_avg_all_nodes)
+    correlation_stats['Average Sample Average Activation (all nodes)'].append(pearson_correlation)
 
     print("Average Sample Average Activation (all nodes) --- R: %f; P-Value: %f" % (pearson_correlation[0], pearson_correlation[1]))
 
     # 6 b. Compute the Pearson correlation between interest level and peak sample average activation level
     pearson_correlation = stats.pearsonr(sample_interest_level[:len(sample_peak_activation_avg_all_nodes)], sample_peak_activation_avg_all_nodes)
+    correlation_stats['Average Sample Peak Activation (all nodes)'].append(pearson_correlation)
 
     print("Average Sample Peak Activation (all nodes) --- R: %f; P-Value: %f" % (pearson_correlation[0], pearson_correlation[1]))
 
@@ -293,16 +298,19 @@ for study_id in range(1, 11):
     for node_type_id, node_type_data in sample_peak_activation_avg_type.items():
         pearson_correlation = stats.pearsonr(sample_interest_level[:len(sample_peak_activation_avg_type[node_type_id])],
                                              sample_peak_activation_avg_type[node_type_id])
+        correlation_stats["Average Sample Peak Activation (%s)" % node_type_id].append(pearson_correlation)
 
         print("Average Sample Peak Activation (%s) --- R: %f; P-Value: %f" % (node_type_id, pearson_correlation[0], pearson_correlation[1]))
 
     # 6 d. Compute the Pearson correlation between interest level and average sample average activation level
     pearson_correlation = stats.pearsonr(sample_interest_level[:len(sample_avg_activation_avg_proximal)], sample_avg_activation_avg_proximal)
+    correlation_stats["Average Sample Average Activation (weighted by proximity)"].append(pearson_correlation)
 
     print("Average Sample Average Activation (weighted by proximity) --- R: %f; P-Value: %f" % (pearson_correlation[0], pearson_correlation[1]))
 
     # 6 e. Compute the Pearson correlation between interest level and average sample peak activation level
     pearson_correlation = stats.pearsonr(sample_interest_level[:len(sample_peak_activation_avg_proximal)], sample_peak_activation_avg_proximal)
+    correlation_stats["Average Sample Peak Activation (weighted by proximity)"].append(pearson_correlation)
 
     print("Average Sample Peak Activation (weighted by proximity) --- R: %f; P-Value: %f" % (pearson_correlation[0], pearson_correlation[1]))
 
@@ -411,6 +419,20 @@ for study_id in range(1, 11):
     # plt.show()
     save_figure.save(fig, filename="study_%d - average_proximity_weighted_activation" % study_id,
                      directory="plot_figures", verbose=False)
+
+# Perform summary statitics on Correlation
+print("Summary Statistics across Studies")
+print("====================================\n")
+
+# iterate through each correlation stats
+print("Average Pearson Correlation to Interest Level")
+print("-----------------------------------------------")
+correlation_stats_key = sorted(tuple(correlation_stats.keys()))
+for stats_key in correlation_stats_key:
+
+    print("%s --- mean: %f; std.dev.: %f" % (stats_key, float(np.mean(correlation_stats[stats_key])),
+                                             float(np.std(correlation_stats[stats_key], ddof=1))))
+
 
 # return back to where the program was executed
 os.chdir(program_dir)
