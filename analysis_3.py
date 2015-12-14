@@ -8,11 +8,11 @@ import glob
 import datetime
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as plt_font
-import matplotlib as mpl
 import numpy as np
 from scipy import stats
 from collections import OrderedDict
 import save_figure
+from test_bed_spatial_map import NodeSpatialMap
 
 # define the root directory where the data are
 data_root_dir = os.path.abspath(os.path.join(os.getcwd(), os.pardir))
@@ -28,6 +28,11 @@ win_size = 1.0
 # number of window to be average over for sample activation calculation
 sample_win_num = 30
 print("Analysis Window = %2.fs" % (win_size*sample_win_num))
+
+# instantiate the map for the CBLA Test Bed
+node_map = NodeSpatialMap()
+node_map.build_cbla_test_bed_node_map()
+node_map.build_cbla_test_bed_grid_map()
 
 # open the workbooks containing the data
 for study_id in range(1, 11):
@@ -74,7 +79,7 @@ for study_id in range(1, 11):
     study_book_file_name = "user_study_dec_7_2015.xlsx"
     study_book = pyxl.load_workbook(study_book_file_name)
 
-    # open the survey sheet
+    # open the interest level sheet
     interest_sheet_raw = study_book.get_sheet_by_name('Interest Level')
 
     # convert cell to array
@@ -84,6 +89,17 @@ for study_id in range(1, 11):
         for col_id in range(interest_sheet_raw.get_highest_column()):
             row_data[col_id] = interest_sheet_raw.cell(row=row_id+1, column=col_id+1).value
         interest_sheet[row_id] = row_data
+
+    # open the location sheet
+    location_sheet_raw = study_book.get_sheet_by_name('Location')
+
+    # convert cell to array
+    location_sheet = [None]*location_sheet_raw.get_highest_row()
+    for row_id in range(location_sheet_raw.get_highest_row()):
+        row_data = [None]*location_sheet_raw.get_highest_column()
+        for col_id in range(location_sheet_raw.get_highest_column()):
+            row_data[col_id] = location_sheet_raw.cell(row=row_id+1, column=col_id+1).value
+        location_sheet[row_id] = row_data
 
     # Specifying indices for the Snapshot sheet
     SNAPSHOT_DATA_ROW = 1
@@ -95,13 +111,31 @@ for study_id in range(1, 11):
     ACTIVATION_TIME_COL = 0
     INTEREST_DATA_ROW = 1
     INTEREST_DATA_COL = 2
+    LOCATION_DATA_ROW = 1
+    LOCATION_DATA_COL = 2
 
     # record the headers
     activation_sheet_headers = activation_sheet[0][ACTIVATION_DATA_COL:]
 
-    # 1. Compute the interest level for each sample point (scaled)
+    # 1 a. Compute the interest level for each sample point (scaled)
     sample_interest_level = interest_sheet[study_id][INTEREST_DATA_COL:]
     sample_interest_level = [level/9 for level in sample_interest_level]
+
+    # 1 b. compute the location of the user at each sample point
+    sample_loc_grid = location_sheet[study_id][LOCATION_DATA_COL:]
+    sample_loc = []
+    # for each samples' location
+    for grid_loc in tuple(sample_loc_grid):
+        # find the grid pts as indicated in the data sheet if the user is in between
+        if isinstance(grid_loc, str):
+            pts = grid_loc.split(",")
+            # convert each to coordinate in the spatial map
+            for i, pt in enumerate(pts):
+                pts[i] = node_map.get_position('box_%d' % int(pt))
+            # get the average
+            sample_loc.append(tuple(np.mean(pts, axis=0)))
+        else:
+            sample_loc.append(node_map.get_position('box_%d' % grid_loc))
 
     # 2. Compute average activation among all nodes for all data points in activation sheet
     activation_win_time = []
@@ -197,8 +231,17 @@ for study_id in range(1, 11):
         for sample_peak_activation_array in sample_peak_activation_arrays:
             sample_peak_activation_avg_cluster[cluster].append(np.mean(sample_peak_activation_array[cluster_indices]))
 
-    # 5 d. For each sample point, calculate the mean peak activation among nodes in close to the user
-    
+    # 5 d. For each sample point, calculate the mean peak activation weighted by proximity
+    sample_peak_activation_avg_proximal = []
+    # compute the proximity weighted peak activation at each sample point
+    for sample_i, peak_arr in enumerate(sample_peak_activation_arrays):
+        # sum put the weighted value of each node
+        peak_sum = 0
+        for node_id, node_peak in enumerate(peak_arr):
+            node_name = activation_sheet_headers[node_id]
+            peak_sum += node_peak*node_map.get_distance(sample_loc[sample_i], node_name)
+        sample_peak_activation_avg_proximal.append(peak_sum/len(peak_arr))
+    print(sample_peak_activation_avg_proximal)
 
     # 6 Computer Pearson Correlations
     print("Pearson Correlation")
