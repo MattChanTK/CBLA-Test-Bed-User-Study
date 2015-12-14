@@ -360,7 +360,7 @@ for study_id in range(1, 11):
     fig = plt.figure(2)
     plt.clf()
     num_plot = len(sample_peak_activation_avg_type) + 1
-    line_color = iter(plt.cm.get_cmap('Set1')(np.linspace(0,1,num_plot)))
+    line_color = iter(plt.cm.get_cmap('brg')(np.linspace(0,1,num_plot)))
 
     # plot the sample interest level over time
     plt.plot(snapshot_win_time[:len(sample_interest_level)],
@@ -391,7 +391,7 @@ for study_id in range(1, 11):
     fig = plt.figure(3)
     plt.clf()
     num_plot = len(sample_peak_activation_avg_proximal) + 1
-    line_color = iter(plt.cm.get_cmap('Set1')(np.linspace(0,1,num_plot)))
+    line_color = iter(plt.cm.get_cmap('brg')(np.linspace(0,1,num_plot)))
 
     # plot the sample interest level over time
     plt.plot(snapshot_win_time[:len(sample_interest_level)],
