@@ -96,8 +96,8 @@ print("--- H1: Average interest level for prescripted mode is different dependin
 # Test Data
 sample_1 = prescripted_first_avg
 sample_2 = prescripted_second_avg
-print("Sample 1:  ", sample_1)
-print("Sample 2:  ", sample_2)
+print("Sample 1:  ", sample_1, " mean = ", np.mean(sample_1))
+print("Sample 2:  ", sample_2, " mean = ", np.mean(sample_2))
 # Analysis
 t_stat, p_val = stats.ttest_ind(sample_1, sample_2, equal_var=False)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
@@ -115,8 +115,8 @@ print("--- H1: Average interest level for CBLA mode is different depending on wh
 # Test Data
 sample_1 = cbla_first_avg
 sample_2 = cbla_second_avg
-print("Sample 1:  ", sample_1)
-print("Sample 2:  ", sample_2)
+print("Sample 1:  ", sample_1, " mean = ", np.mean(sample_1))
+print("Sample 2:  ", sample_2, " mean = ", np.mean(sample_2))
 # Analysis
 t_stat, p_val = stats.ttest_ind(sample_1, sample_2, equal_var=False)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
@@ -134,8 +134,8 @@ print("--- H1: Average interest level is different depending on whether it is on
 # Test Data
 sample_1 = cbla_first_avg+prescripted_first_avg
 sample_2 = cbla_second_avg+prescripted_second_avg
-print("Sample 1:  ", sample_1)
-print("Sample 2:  ", sample_2)
+print("Sample 1:  ", sample_1, " mean = ", np.mean(sample_1))
+print("Sample 2:  ", sample_2, " mean = ", np.mean(sample_2))
 # Analysis
 t_stat, p_val = stats.ttest_ind(sample_1, sample_2, equal_var=False)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
@@ -153,8 +153,8 @@ print("--- H1: Average interest level for CBLA mode is different from Prescripte
 # Test Data
 sample_1 = prescripted_first_avg
 sample_2 = cbla_first_avg
-print("Sample 1:  ", sample_1)
-print("Sample 2:  ", sample_2)
+print("Sample 1:  ", sample_1, " mean = ", np.mean(sample_1))
+print("Sample 2:  ", sample_2, " mean = ", np.mean(sample_2))
 # Analysis
 t_stat, p_val = stats.ttest_ind(sample_1, sample_2, equal_var=False)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
@@ -172,8 +172,8 @@ print("--- H1: Average interest level for CBLA mode is different from Prescripte
 # Test Data
 sample_1 = prescripted_second_avg
 sample_2 = cbla_second_avg
-print("Sample 1:  ", sample_1)
-print("Sample 2:  ", sample_2)
+print("Sample 1:  ", sample_1, " mean = ", np.mean(sample_1))
+print("Sample 2:  ", sample_2, " mean = ", np.mean(sample_2))
 # Analysis
 t_stat, p_val = stats.ttest_ind(sample_1, sample_2, equal_var=False)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
@@ -191,8 +191,8 @@ print("--- H1: Average interest level for CBLA mode is different from Prescripte
 # Test Data
 sample_1 = prescripted_first_avg + prescripted_second_avg
 sample_2 = cbla_first_avg + cbla_second_avg
-print("Sample 1:  ", sample_1)
-print("Sample 2:  ", sample_2)
+print("Sample 1:  ", sample_1, " mean = ", np.mean(sample_1))
+print("Sample 2:  ", sample_2, " mean = ", np.mean(sample_2))
 # Analysis
 t_stat, p_val = stats.ttest_ind(sample_1, sample_2, equal_var=False)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
@@ -215,8 +215,8 @@ print("--- H1: Participants find that CBLA Mode is not equally as interesting as
 # Test Data
 sample_1 = prescripted_first_avg
 sample_2 = cbla_second_avg
-print("Sample 1:  ", sample_1)
-print("Sample 2:  ", sample_2)
+print("Sample 1:  ", sample_1, " mean = ", np.mean(sample_1))
+print("Sample 2:  ", sample_2, " mean = ", np.mean(sample_2))
 # Analysis
 t_stat, p_val = stats.ttest_rel(sample_1, sample_2)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
@@ -230,12 +230,12 @@ print("2. CBLA Mode vs. Prescripted Mode when CBLA is on first")
 # Null Hypothesis
 print("--- H0: Participants find that CBLA Mode is equally as interesting as prescripted mode when CBLA Mode is on first")
 # Alternate Hypothesis
-print("--- H1: Participants find that CBLA Mode is not equally as interesting as prescripted modee more interesting when CBLA Mode is on first")
+print("--- H1: Participants find that CBLA Mode is not equally as interesting as prescripted mode when CBLA Mode is on first")
 # Test Data
 sample_1 = cbla_first_avg
 sample_2 = prescripted_second_avg
-print("Sample 1:  ", sample_1)
-print("Sample 2:  ", sample_2)
+print("Sample 1:  ", sample_1, " mean = ", np.mean(sample_1))
+print("Sample 2:  ", sample_2, " mean = ", np.mean(sample_2))
 # Analysis
 t_stat, p_val = stats.ttest_rel(sample_1, sample_2)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
@@ -253,8 +253,8 @@ print("--- H1: Participants find that CBLA Mode is not equally as interesting as
 # Test Data
 sample_1 = cbla_first_avg+prescripted_first_avg
 sample_2 = prescripted_second_avg+cbla_second_avg
-print("Sample 1:  ", sample_1)
-print("Sample 2:  ", sample_2)
+print("Sample 1:  ", sample_1, " mean = ", np.mean(sample_1))
+print("Sample 2:  ", sample_2, " mean = ", np.mean(sample_2))
 # Analysis
 t_stat, p_val = stats.ttest_rel(sample_1, sample_2)
 print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
