@@ -137,6 +137,8 @@ for study_id in range(1, 11):
         else:
             sample_loc.append(node_map.get_position('box_%d' % grid_loc))
 
+    #print("Participant's location: ", ['(%.2f, %.2f)' % tuple(pt[0:2]) for pt in sample_loc])
+
     # 2. Compute average activation among all nodes for all data points in activation sheet
     activation_win_time = []
     activation_avg_all_nodes = []
@@ -203,6 +205,27 @@ for study_id in range(1, 11):
     for sample_avg_activation_array in sample_avg_activation_arrays:
         sample_avg_activation_avg_all_nodes.append(np.mean(sample_avg_activation_array))
 
+    # 4 d. For each sample point, calculate the mean average activation weighted by proximity
+    sample_avg_activation_avg_proximal = []
+    min_dist_to_user_arr = []
+    # compute the proximity weighted avg activation at each sample point
+    for sample_i, avg_arr in enumerate(sample_avg_activation_arrays):
+        min_dist = [float("inf"), None]
+        # sum put the weighted value of each node
+        avg_sum = 0
+        for node_id, node_avg in enumerate(avg_arr):
+            node_name = activation_sheet_headers[node_id]
+            # keep track of the closest node
+            dist_to_user = node_map.get_distance(sample_loc[sample_i], node_name)
+            if dist_to_user < min_dist[0]:
+                min_dist[0] = dist_to_user
+                min_dist[1] = node_name
+            avg_sum += node_avg/dist_to_user
+        sample_avg_activation_avg_proximal.append(avg_sum/len(avg_arr))
+        min_dist_to_user_arr.append(min_dist)
+    # print("Closest Node: ", min_dist_to_user_arr, end="\n\n")
+
+
     # 5 a. For each sample point, calculate the peak activation for each node close to the sample point
     # it is an array of average activation level for each node
     sample_peak_activation_arrays = []
@@ -233,18 +256,26 @@ for study_id in range(1, 11):
 
     # 5 d. For each sample point, calculate the mean peak activation weighted by proximity
     sample_peak_activation_avg_proximal = []
+    min_dist_to_user_arr = []
     # compute the proximity weighted peak activation at each sample point
     for sample_i, peak_arr in enumerate(sample_peak_activation_arrays):
+        min_dist = [float("inf"), None]
         # sum put the weighted value of each node
         peak_sum = 0
         for node_id, node_peak in enumerate(peak_arr):
             node_name = activation_sheet_headers[node_id]
-            peak_sum += node_peak*node_map.get_distance(sample_loc[sample_i], node_name)
+            # keep track of the closest node
+            dist_to_user = node_map.get_distance(sample_loc[sample_i], node_name)
+            if dist_to_user < min_dist[0]:
+                min_dist[0] = dist_to_user
+                min_dist[1] = node_name
+            peak_sum += node_peak/dist_to_user
         sample_peak_activation_avg_proximal.append(peak_sum/len(peak_arr))
-    print(sample_peak_activation_avg_proximal)
+        min_dist_to_user_arr.append(min_dist)
+    #print("Closest Node: ", min_dist_to_user_arr, end="\n\n")
 
     # 6 Computer Pearson Correlations
-    print("Pearson Correlation")
+    print("Pearson Correlation to Interest Level")
     print("======================")
 
     # 6 a. Compute the Pearson correlation between interest level and average sample average activation level
@@ -259,11 +290,21 @@ for study_id in range(1, 11):
     print("Average Sample Peak Activation (all nodes) --- R: %f; P-Value: %f" % (pearson_correlation[0], pearson_correlation[1]))
 
     # 6 c. Compute the Pearson correlation between interest level and peak sample average activation level for each cluster
-    for cluster_id, cluster_data in sample_peak_activation_avg_cluster.items():
-        pearson_correlation = stats.pearsonr(sample_interest_level[:len(sample_peak_activation_avg_cluster[cluster_id])],
-                                             sample_peak_activation_avg_cluster[cluster_id])
+    # for cluster_id, cluster_data in sample_peak_activation_avg_cluster.items():
+    #     pearson_correlation = stats.pearsonr(sample_interest_level[:len(sample_peak_activation_avg_cluster[cluster_id])],
+    #                                          sample_peak_activation_avg_cluster[cluster_id])
+    #
+    #     print("Average Sample Peak Activation (%s) --- R: %f; P-Value: %f" % (cluster_id, pearson_correlation[0], pearson_correlation[1]))
 
-        print("Average Sample Peak Activation (%s) --- R: %f; P-Value: %f" % (cluster_id, pearson_correlation[0], pearson_correlation[1]))
+    # 6 d. Compute the Pearson correlation between interest level and average sample average activation level
+    pearson_correlation = stats.pearsonr(sample_interest_level[:len(sample_avg_activation_avg_proximal)], sample_avg_activation_avg_proximal)
+
+    print("Average Sample Average Activation (weighted by proximity) --- R: %f; P-Value: %f" % (pearson_correlation[0], pearson_correlation[1]))
+
+    # 6 e. Compute the Pearson correlation between interest level and average sample peak activation level
+    pearson_correlation = stats.pearsonr(sample_interest_level[:len(sample_peak_activation_avg_proximal)], sample_peak_activation_avg_proximal)
+
+    print("Average Sample Peak Activation (weighted by proximity) --- R: %f; P-Value: %f" % (pearson_correlation[0], pearson_correlation[1]))
 
     print("\n")
 
@@ -308,9 +349,40 @@ for study_id in range(1, 11):
                      directory="plot_figures", verbose=False)
 
     # 7 b. plot the statistics that includes node within a cluster
-    fig = plt.figure(2)
+    # fig = plt.figure(2)
+    # plt.clf()
+    # num_plot = len(sample_peak_activation_avg_cluster) + 1
+    # line_color = iter(plt.cm.get_cmap('Set1')(np.linspace(0,1,num_plot)))
+    #
+    # # plot the sample interest level over time
+    # plt.plot(snapshot_win_time[:len(sample_interest_level)],
+    #          sample_interest_level,
+    #          "-o", c=next(line_color), ms=10, label="Sample Interest Level",)
+    #
+    # # plot the average of peak sample activation level among nodes in each cluster
+    # for cluster_id, cluster_data in sample_peak_activation_avg_cluster.items():
+    #
+    #     plt.plot(snapshot_win_time[:len(cluster_data)], cluster_data,
+    #              "-x", c=next(line_color), ms=5, label="Average Sample Peak Activation (for %s; window=%.2f)" % (cluster_id, win_size))
+    #
+    # # add the x-axis label
+    # plt.xlabel("Time (s)")
+    #
+    # # add the legend
+    # fontP = plt_font.FontProperties()
+    # fontP.set_size('small')
+    # plt.legend( bbox_to_anchor=(1.02, 1), loc=4, prop=fontP)
+    #
+    # # add text about correlation
+    # plt.text(60, 0.1,'R=%f' % pearson_correlation[0])
+    # # plt.show()
+    # save_figure.save(fig, filename="study_%d - average_cluster_activation" % study_id,
+    #                  directory="plot_figures", verbose=False)
+
+    # 7 c. plot the proximity weighted activation
+    fig = plt.figure(3)
     plt.clf()
-    num_plot = len(sample_peak_activation_avg_cluster) + 1
+    num_plot = len(sample_peak_activation_avg_proximal) + 1
     line_color = iter(plt.cm.get_cmap('Set1')(np.linspace(0,1,num_plot)))
 
     # plot the sample interest level over time
@@ -318,11 +390,15 @@ for study_id in range(1, 11):
              sample_interest_level,
              "-o", c=next(line_color), ms=10, label="Sample Interest Level",)
 
-    # plot the average of peak sample activation level among all nodes
-    for cluster_id, cluster_data in sample_peak_activation_avg_cluster.items():
+    # plot the average of peak sample activation level weighted by proximity to the user
+    plt.plot(snapshot_win_time[:len(sample_peak_activation_avg_proximal)], sample_peak_activation_avg_proximal,
+             "-x", c=next(line_color), ms=5,
+             label="Average Sample Peak Activation (weighted by proximity; window=%.2f)" % (win_size))
 
-        plt.plot(snapshot_win_time[:len(cluster_data)], cluster_data,
-                 "-x", c=next(line_color), ms=5, label="Average Sample Peak Activation (for %s; window=%.2f)" % (cluster_id, win_size))
+    # plot the average of peak sample activation level weighted by proximity to the user
+    plt.plot(snapshot_win_time[:len(sample_avg_activation_avg_proximal)], sample_avg_activation_avg_proximal,
+             "-x", c=next(line_color), ms=5,
+             label="Average Sample Average Activation (weighted by proximity; window=%.2f)" % (win_size))
 
     # add the x-axis label
     plt.xlabel("Time (s)")
@@ -332,10 +408,8 @@ for study_id in range(1, 11):
     fontP.set_size('small')
     plt.legend( bbox_to_anchor=(1.02, 1), loc=4, prop=fontP)
 
-    # add text about correlation
-    plt.text(60, 0.1,'R=%f' % pearson_correlation[0])
     # plt.show()
-    save_figure.save(fig, filename="study_%d - average_cluster_activation" % study_id,
+    save_figure.save(fig, filename="study_%d - average_proximity_weighted_activation" % study_id,
                      directory="plot_figures", verbose=False)
 
 # return back to where the program was executed
