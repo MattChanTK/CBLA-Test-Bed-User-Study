@@ -8,6 +8,7 @@ import glob
 import datetime
 import matplotlib.pyplot as plt
 import matplotlib.font_manager as plt_font
+import matplotlib as mpl
 import numpy as np
 from scipy import stats
 from collections import OrderedDict
@@ -26,6 +27,7 @@ win_size = 1.0
 
 # number of window to be average over for sample activation calculation
 sample_win_num = 30
+print("Analysis Window = %2.fs" % (win_size*sample_win_num))
 
 # open the workbooks containing the data
 for study_id in range(1, 11):
@@ -95,7 +97,7 @@ for study_id in range(1, 11):
     INTEREST_DATA_COL = 2
 
     # record the headers
-    activation_sheet_headers = activation_sheet[0]
+    activation_sheet_headers = activation_sheet[0][ACTIVATION_DATA_COL:]
 
     # 1. Compute the interest level for each sample point (scaled)
     sample_interest_level = interest_sheet[study_id][INTEREST_DATA_COL:]
@@ -160,7 +162,7 @@ for study_id in range(1, 11):
     # it is an array of average activation level for each node
     sample_avg_activation_arrays = []
     for sample_activation_array in sample_activation_arrays:
-        sample_avg_activation_arrays.append(np.mean(sample_activation_array, axis=1))
+        sample_avg_activation_arrays.append(np.mean(sample_activation_array, axis=0))
 
     # 4 b. For each sample point, calculate the mean activation among all nodes
     sample_avg_activation_avg_all_nodes = []
@@ -171,22 +173,32 @@ for study_id in range(1, 11):
     # it is an array of average activation level for each node
     sample_peak_activation_arrays = []
     for sample_activation_array in sample_activation_arrays:
-        sample_peak_activation_arrays.append(np.max(sample_activation_array, axis=1))
+        sample_peak_activation_arrays.append(np.max(sample_activation_array, axis=0))
 
     # 5 b. For each sample point, calculate the mean peak activation among all nodes
     sample_peak_activation_avg_all_nodes = []
     for sample_peak_activation_array in sample_peak_activation_arrays:
         sample_peak_activation_avg_all_nodes.append(np.mean(sample_peak_activation_array))
 
-
-    # 5 c. For each sample point, calculate the mean peak activation among all nodes in each cluster
+    # 5 c. For each sample point, calculate the mean peak activation among nodes in each cluster
     sample_peak_activation_avg_cluster = OrderedDict()
     # iterate through each cluster
     clusters = ('c%d' % cluster_id for cluster_id in range(1,5))
+
     for cluster in clusters:
+        # find the indices that are belonged to that cluster
+        cluster_indices = []
+        for id, header in enumerate(activation_sheet_headers):
+            if cluster in header.split('.')[0]:
+                cluster_indices.append(id)
+
+        # calculate for each sub-set of the data belonging to the cluster
         sample_peak_activation_avg_cluster[cluster] = []
         for sample_peak_activation_array in sample_peak_activation_arrays:
-            sample_peak_activation_avg_cluster[cluster].append(np.mean(sample_peak_activation_array))
+            sample_peak_activation_avg_cluster[cluster].append(np.mean(sample_peak_activation_array[cluster_indices]))
+
+    # 5 d. For each sample point, calculate the mean peak activation among nodes in close to the user
+    
 
     # 6 Computer Pearson Correlations
     print("Pearson Correlation")
@@ -203,21 +215,30 @@ for study_id in range(1, 11):
 
     print("Average Sample Peak Activation (all nodes) --- R: %f; P-Value: %f" % (pearson_correlation[0], pearson_correlation[1]))
 
+    # 6 c. Compute the Pearson correlation between interest level and peak sample average activation level for each cluster
+    for cluster_id, cluster_data in sample_peak_activation_avg_cluster.items():
+        pearson_correlation = stats.pearsonr(sample_interest_level[:len(sample_peak_activation_avg_cluster[cluster_id])],
+                                             sample_peak_activation_avg_cluster[cluster_id])
+
+        print("Average Sample Peak Activation (%s) --- R: %f; P-Value: %f" % (cluster_id, pearson_correlation[0], pearson_correlation[1]))
+
     print("\n")
 
     # 7. plot them
-    plt.clf()
+
+    # 7 a. plot the statistics that includes all nodes
     fig = plt.figure(1)
+    plt.clf()
 
     # plot the sample interest level over time
     plt.plot(snapshot_win_time[:len(sample_interest_level)],
              sample_interest_level,
-             "-go", ms=10, label="Sample Interest Level")
+             "-bo", ms=10, label="Sample Interest Level")
 
     # plot the average activation level among all nodes
     plt.plot(activation_win_time[:len(activation_avg_all_nodes)],
              activation_avg_all_nodes,
-             "-b", label="Average Activation (for all Nodes; window=%.2f)" % win_size)
+             "-g", label="Average Activation (for all Nodes; window=%.2f)" % win_size)
 
     # plot the average of average sample activation level among all nodes
     plt.plot(snapshot_win_time[:len(sample_avg_activation_avg_all_nodes)],
@@ -241,6 +262,37 @@ for study_id in range(1, 11):
     plt.text(60, 0.1,'R=%f' % pearson_correlation[0])
     # plt.show()
     save_figure.save(fig, filename="study_%d - average_total_activation" % study_id,
+                     directory="plot_figures", verbose=False)
+
+    # 7 b. plot the statistics that includes node within a cluster
+    fig = plt.figure(2)
+    plt.clf()
+    num_plot = len(sample_peak_activation_avg_cluster) + 1
+    line_color = iter(plt.cm.get_cmap('Set1')(np.linspace(0,1,num_plot)))
+
+    # plot the sample interest level over time
+    plt.plot(snapshot_win_time[:len(sample_interest_level)],
+             sample_interest_level,
+             "-o", c=next(line_color), ms=10, label="Sample Interest Level",)
+
+    # plot the average of peak sample activation level among all nodes
+    for cluster_id, cluster_data in sample_peak_activation_avg_cluster.items():
+
+        plt.plot(snapshot_win_time[:len(cluster_data)], cluster_data,
+                 "-x", c=next(line_color), ms=5, label="Average Sample Peak Activation (for %s; window=%.2f)" % (cluster_id, win_size))
+
+    # add the x-axis label
+    plt.xlabel("Time (s)")
+
+    # add the legend
+    fontP = plt_font.FontProperties()
+    fontP.set_size('small')
+    plt.legend( bbox_to_anchor=(1.02, 1), loc=4, prop=fontP)
+
+    # add text about correlation
+    plt.text(60, 0.1,'R=%f' % pearson_correlation[0])
+    # plt.show()
+    save_figure.save(fig, filename="study_%d - average_cluster_activation" % study_id,
                      directory="plot_figures", verbose=False)
 
 # return back to where the program was executed
