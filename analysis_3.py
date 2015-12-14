@@ -10,6 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as plt_font
 import numpy as np
 from scipy import stats
+from collections import OrderedDict
 import save_figure
 
 # define the root directory where the data are
@@ -27,7 +28,7 @@ win_size = 1.0
 sample_win_num = 30
 
 # open the workbooks containing the data
-for study_id in range(1, 9):
+for study_id in range(1, 11):
 
     # change to the study data directory
     os.chdir(data_root_dir)
@@ -42,6 +43,7 @@ for study_id in range(1, 9):
     # first, open the activation workbook
     activation_book_file_name = "study_%d (%.2fs).xls" % (study_id, win_size)
     activation_book = xlrd.open_workbook(activation_book_file_name)
+    print("Data filename: %s\n" % activation_book_file_name)
 
     # open the survey sheet
     activation_sheet_raw = activation_book.sheet_by_name('Node Activation')
@@ -91,6 +93,9 @@ for study_id in range(1, 9):
     ACTIVATION_TIME_COL = 0
     INTEREST_DATA_ROW = 1
     INTEREST_DATA_COL = 2
+
+    # record the headers
+    activation_sheet_headers = activation_sheet[0]
 
     # 1. Compute the interest level for each sample point (scaled)
     sample_interest_level = interest_sheet[study_id][INTEREST_DATA_COL:]
@@ -173,6 +178,16 @@ for study_id in range(1, 9):
     for sample_peak_activation_array in sample_peak_activation_arrays:
         sample_peak_activation_avg_all_nodes.append(np.mean(sample_peak_activation_array))
 
+
+    # 5 c. For each sample point, calculate the mean peak activation among all nodes in each cluster
+    sample_peak_activation_avg_cluster = OrderedDict()
+    # iterate through each cluster
+    clusters = ('c%d' % cluster_id for cluster_id in range(1,5))
+    for cluster in clusters:
+        sample_peak_activation_avg_cluster[cluster] = []
+        for sample_peak_activation_array in sample_peak_activation_arrays:
+            sample_peak_activation_avg_cluster[cluster].append(np.mean(sample_peak_activation_array))
+
     # 6 Computer Pearson Correlations
     print("Pearson Correlation")
     print("======================")
@@ -225,7 +240,8 @@ for study_id in range(1, 9):
     # add text about correlation
     plt.text(60, 0.1,'R=%f' % pearson_correlation[0])
     # plt.show()
-    save_figure.save(fig, filename="study_%d - average_total_activation.png" % study_id, directory="plot_figures")
+    save_figure.save(fig, filename="study_%d - average_total_activation" % study_id,
+                     directory="plot_figures", verbose=False)
 
 # return back to where the program was executed
 os.chdir(program_dir)
