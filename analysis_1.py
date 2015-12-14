@@ -104,8 +104,14 @@ print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
 else:
-    print("H0 rejected.\n")
+    print("H0 rejected.")
 
+    if t_stat > 0:
+        compare_word = 'more'
+    else:
+        compare_word = 'less'
+    print("For prescripted Mode, the first segment is %s interesting than second segment with %.2f%% confidence.\n"
+          % (compare_word, 100-p_val/2*100))
 # CBLA: test if it matters if it was in the first-half or second-half
 print("2. CBLA Mode: on during first half vs one during second half")
 # Null Hypothesis
@@ -123,7 +129,15 @@ print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
 else:
-    print("H0 rejected.\n")
+    print("H0 rejected.")
+
+    if t_stat > 0:
+        compare_word = 'more'
+    else:
+        compare_word = 'less'
+    print("For CBLA Mode, the first segment is %s interesting than second segment with %.2f%% confidence.\n"
+          % (compare_word, 100-p_val/2*100))
+
 
 # CBLA: test if it matters if it was in the first-half or second-half
 print("3. Both Modes: on during first half vs one during second half")
@@ -142,7 +156,14 @@ print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
 else:
-    print("H0 rejected.\n")
+    print("H0 rejected.")
+
+    if t_stat > 0:
+        compare_word = 'more'
+    else:
+        compare_word = 'less'
+    print("The first segment is %s interesting than second segment with %.2f%% confidence.\n"
+          % (compare_word, 100-p_val/2*100))
 
 # prescripted vs cbla: for first half
 print("4. CBLA Mode vs. Prescripted Mode: on during first half")
@@ -161,7 +182,14 @@ print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
 else:
-    print("H0 rejected.\n")
+    print("H0 rejected.")
+
+    if t_stat > 0:
+        compare_word = 'more'
+    else:
+        compare_word = 'less'
+    print("Prescripted Mode is %s interesting than CBLA mode when it is on during the first segment with %.2f%% confidence.\n"
+          % (compare_word, 100-p_val/2*100))
 
 # prescripted vs cbla: for second half
 print("5. CBLA Mode vs. Prescripted Mode: on during second half")
@@ -180,7 +208,14 @@ print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
 else:
-    print("H0 rejected.\n")
+    print("H0 rejected.")
+
+    if t_stat > 0:
+        compare_word = 'more'
+    else:
+        compare_word = 'less'
+    print("Prescripted Mode is %s interesting than CBLA mode when it is on during the second segment with %.2f%% confidence.\n"
+          % (compare_word, 100-p_val/2*100))
 
 # prescripted vs cbla: for both halves
 print("6. CBLA Mode vs. Prescripted Mode: on during the whole trial")
@@ -199,7 +234,15 @@ print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
 else:
-    print("H0 rejected.\n")
+    print("H0 rejected.")
+
+    if t_stat > 0:
+        compare_word = 'more'
+    else:
+        compare_word = 'less'
+    print("Prescripted Mode is %s interesting than CBLA mode overall with %.2f%% confidence.\n"
+          % (compare_word, 100-p_val/2*100))
+
 
 
 # T-Test Related Sample
@@ -223,7 +266,15 @@ print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
 else:
-    print("H0 rejected.\n")
+    print("H0 rejected.")
+
+    if t_stat > 0:
+        compare_word = 'more'
+    else:
+        compare_word = 'less'
+    print("Prescripted Mode is %s interesting than CBLA mode when prescripted Mode is on first with %.2f%% confidence.\n"
+          % (compare_word, 100-p_val/2*100))
+
 
 # prescripted vs cbla: for CBLA first
 print("2. CBLA Mode vs. Prescripted Mode when CBLA is on first")
@@ -242,14 +293,22 @@ print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
 else:
-    print("H0 rejected.\n")
+    print("H0 rejected.")
 
-# prescripted vs cbla: for both prescripted first and cbla first
-print("3. CBLA Mode vs. Prescripted Mode")
+    if t_stat > 0:
+        compare_word = 'more'
+    else:
+        compare_word = 'less'
+    print("CBLA Mode is %s interesting than prescripted mode when CBLA Mode is on first with %.2f%% confidence.\n"
+          % (compare_word, 100-p_val/2*100))
+
+
+# First segment vs second segment for both modes
+print("3. First Segment vs. Second Segment (for both modes)")
 # Null Hypothesis
-print("--- H0: Participants find that CBLA Mode is equally as interesting as prescripted mode")
+print("--- H0: Participants find that the first segment is equally as interesting as second segment")
 # Alternate Hypothesis
-print("--- H1: Participants find that CBLA Mode is not equally as interesting as prescripted mode")
+print("--- H1: Participants find that the first segment is not equally as interesting as the second segment")
 # Test Data
 sample_1 = cbla_first_avg+prescripted_first_avg
 sample_2 = prescripted_second_avg+cbla_second_avg
@@ -261,4 +320,11 @@ print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
 if p_val > p_significant:
     print("H0 cannot be rejected.\n")
 else:
-    print("H0 rejected.\n")
+    print("H0 rejected.")
+
+    if t_stat > 0:
+        compare_word = 'more'
+    else:
+        compare_word = 'less'
+    print("The first segment is %s interesting than the second segment with %.2f%% confidence.\n"
+          % (compare_word, 100-p_val/2*100))
