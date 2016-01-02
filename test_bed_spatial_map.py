@@ -39,7 +39,7 @@ class NodeSpatialMap(object):
         else:
             pos_2 = self.get_position(to_node)
 
-        if isinstance(pos_2, (tuple, list)) and \
+        if isinstance(pos_1, (tuple, list)) and \
                 isinstance(pos_2, (tuple, list))\
                 and (len(pos_1) == len(pos_2)):
 

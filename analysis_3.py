@@ -36,6 +36,8 @@ node_map.build_cbla_test_bed_grid_map()
 
 # instantiate the dict of data for all studies
 correlation_stats = defaultdict(list)
+interest_level_stats = []
+activation_level_stats = defaultdict(list)
 
 # open the workbooks containing the data
 for study_id in range(1, 11):
@@ -123,6 +125,7 @@ for study_id in range(1, 11):
     # 1 a. Compute the interest level for each sample point (scaled)
     sample_interest_level = interest_sheet[study_id][INTEREST_DATA_COL:]
     sample_interest_level = [level/9 for level in sample_interest_level]
+    interest_level_stats += sample_interest_level
 
     # 1 b. compute the location of the user at each sample point
     sample_loc_grid = location_sheet[study_id][LOCATION_DATA_COL:]
@@ -208,6 +211,24 @@ for study_id in range(1, 11):
     for sample_avg_activation_array in sample_avg_activation_arrays:
         sample_avg_activation_avg_all_nodes.append(np.mean(sample_avg_activation_array))
 
+    # 5 c. For each sample point, calculate the mean average activation among nodes in each node type
+    sample_avg_activation_avg_type = OrderedDict()
+    # iterate through each cluster
+    node_types = ('cbla_halfFin', 'cbla_reflex', 'cbla_light' )
+
+    for node_type in node_types:
+        # find the indices that are belonged to that node type
+        node_type_indices = []
+        for id, header in enumerate(activation_sheet_headers):
+            if node_type in header.split('.')[1]:
+                node_type_indices.append(id)
+
+        # calculate for each sub-set of the data belonging to the cluster
+        sample_avg_activation_avg_type[node_type] = []
+        for sample_avg_activation_array in sample_avg_activation_arrays:
+            sample_avg_activation_avg_type[node_type].append(np.mean(sample_avg_activation_array[node_type_indices]))
+
+
     # 4 d. For each sample point, calculate the mean average activation weighted by proximity
     sample_avg_activation_avg_proximal = []
     min_dist_to_user_arr = []
@@ -285,37 +306,50 @@ for study_id in range(1, 11):
 
     pearson_correlation = stats.pearsonr(sample_interest_level[:len(sample_avg_activation_avg_all_nodes)], sample_avg_activation_avg_all_nodes)
     correlation_stats['Average Sample Average Activation (all nodes)'].append(pearson_correlation)
+    activation_level_stats['Average Sample Average Activation (all nodes)'] += sample_avg_activation_avg_all_nodes
 
     print("Average Sample Average Activation (all nodes) --- R: %f; P-Value: %f" % (pearson_correlation[0], pearson_correlation[1]))
 
     # 6 b. Compute the Pearson correlation between interest level and peak sample average activation level
     pearson_correlation = stats.pearsonr(sample_interest_level[:len(sample_peak_activation_avg_all_nodes)], sample_peak_activation_avg_all_nodes)
     correlation_stats['Average Sample Peak Activation (all nodes)'].append(pearson_correlation)
+    activation_level_stats['Average Sample Peak Activation (all nodes)'] += sample_peak_activation_avg_all_nodes
 
     print("Average Sample Peak Activation (all nodes) --- R: %f; P-Value: %f" % (pearson_correlation[0], pearson_correlation[1]))
 
-    # 6 c. Compute the Pearson correlation between interest level and peak sample average activation level for each type
+    # 6 c. Compute the Pearson correlation between interest level and average/peak sample average activation level for each type
+    for node_type_id, node_type_data in sample_avg_activation_avg_type.items():
+        pearson_correlation = stats.pearsonr(sample_interest_level[:len(sample_avg_activation_avg_type[node_type_id])],
+                                             sample_avg_activation_avg_type[node_type_id])
+        correlation_stats["Average Sample Average Activation (%s)" % node_type_id].append(pearson_correlation)
+        activation_level_stats["Average Sample Average Activation (%s)" % node_type_id] += sample_avg_activation_avg_type[node_type_id]
+
+        print("Average Sample Average Activation (%s) --- R: %f; P-Value: %f" % (node_type_id, pearson_correlation[0], pearson_correlation[1]))
+
     for node_type_id, node_type_data in sample_peak_activation_avg_type.items():
         pearson_correlation = stats.pearsonr(sample_interest_level[:len(sample_peak_activation_avg_type[node_type_id])],
                                              sample_peak_activation_avg_type[node_type_id])
         correlation_stats["Average Sample Peak Activation (%s)" % node_type_id].append(pearson_correlation)
+        activation_level_stats["Average Sample Peak Activation (%s)" % node_type_id] += sample_peak_activation_avg_type[node_type_id]
 
         print("Average Sample Peak Activation (%s) --- R: %f; P-Value: %f" % (node_type_id, pearson_correlation[0], pearson_correlation[1]))
 
     # 6 d. Compute the Pearson correlation between interest level and average sample average activation level
     pearson_correlation = stats.pearsonr(sample_interest_level[:len(sample_avg_activation_avg_proximal)], sample_avg_activation_avg_proximal)
-    correlation_stats["Average Sample Average Activation (weighted by proximity)"].append(pearson_correlation)
+    correlation_stats["Average Sample Proximal Average Activation (all Nodes)"].append(pearson_correlation)
+    activation_level_stats["Average Sample Proximal Average Activation (all Nodes)"] += sample_avg_activation_avg_proximal
 
-    print("Average Sample Average Activation (weighted by proximity) --- R: %f; P-Value: %f" % (pearson_correlation[0], pearson_correlation[1]))
+    print("Average Sample Proximal Average Activation (all Nodes) --- R: %f; P-Value: %f" % (pearson_correlation[0], pearson_correlation[1]))
 
     # 6 e. Compute the Pearson correlation between interest level and average sample peak activation level
     pearson_correlation = stats.pearsonr(sample_interest_level[:len(sample_peak_activation_avg_proximal)], sample_peak_activation_avg_proximal)
-    correlation_stats["Average Sample Peak Activation (weighted by proximity)"].append(pearson_correlation)
+    correlation_stats["Average Sample Proximal Peak Activation (all Nodes)"].append(pearson_correlation)
+    activation_level_stats["Average Sample Proximal Peak Activation (all Nodes)"] += sample_peak_activation_avg_proximal
 
-    print("Average Sample Peak Activation (weighted by proximity) --- R: %f; P-Value: %f" % (pearson_correlation[0], pearson_correlation[1]))
+    print("Average Sample Proximal Peak Activation (weighted by proximity) --- R: %f; P-Value: %f" % (pearson_correlation[0], pearson_correlation[1]))
 
     print("\n")
-
+    # continue
     # 7. plot them
 
     # 7 a. plot the statistics that includes all nodes
@@ -401,12 +435,12 @@ for study_id in range(1, 11):
     # plot the average of peak sample activation level weighted by proximity to the user
     plt.plot(snapshot_win_time[:len(sample_peak_activation_avg_proximal)], sample_peak_activation_avg_proximal,
              "-x", c=next(line_color), ms=5,
-             label="Average Sample Peak Activation (weighted by proximity; window=%.2f)" % (win_size))
+             label="Average Sample Proximal Peak Activation (all Nodes; window=%.2f)" % (win_size))
 
     # plot the average of peak sample activation level weighted by proximity to the user
     plt.plot(snapshot_win_time[:len(sample_avg_activation_avg_proximal)], sample_avg_activation_avg_proximal,
              "-x", c=next(line_color), ms=5,
-             label="Average Sample Average Activation (weighted by proximity; window=%.2f)" % (win_size))
+             label="Average Sample Proximal Average Activation (all Nodes; window=%.2f)" % (win_size))
 
     # add the x-axis label
     plt.xlabel("Time (s)")
@@ -420,6 +454,33 @@ for study_id in range(1, 11):
     save_figure.save(fig, filename="study_%d - average_proximity_weighted_activation" % study_id,
                      directory="plot_figures", verbose=False)
 
+
+    fig = plt.figure(4)
+    plt.clf()
+
+    # # plot the sample interest level over time
+    # plt.plot(sample_avg_activation_avg_all_nodes,
+    #          sample_interest_level,
+    #          "-bo", ms=5, label="Average Sample Average Activation (for all Nodes)")
+
+     # plot the average of peak sample activation level among all nodes
+    plt.plot(sample_peak_activation_avg_all_nodes,
+             sample_interest_level,
+             "mo", ms=15, label="Average Sample Peak Activation (for all Nodes)")
+
+    # add the x-axis label
+    plt.xlabel("Activation Level")
+    plt.ylabel("Interest Level")
+
+    # add the legend
+    # fontP = plt_font.FontProperties()
+    # fontP.set_size('small')
+    # plt.legend(loc='upper left', prop=fontP)
+
+    # plt.show()
+    save_figure.save(fig, filename="study_%d - correlation total activation" % study_id,
+                     directory="plot_figures", verbose=False)
+
 # Perform summary statitics on Correlation
 print("Summary Statistics across Studies")
 print("====================================\n")
@@ -430,8 +491,40 @@ print("-----------------------------------------------")
 correlation_stats_key = sorted(tuple(correlation_stats.keys()))
 for stats_key in correlation_stats_key:
 
-    print("%s --- mean: %f; std.dev.: %f" % (stats_key, float(np.mean(correlation_stats[stats_key])),
-                                             float(np.std(correlation_stats[stats_key], ddof=1))))
+    print("%s --- mean: %f; std.dev.: %f; max P: %f" % (stats_key, float(np.mean(correlation_stats[stats_key], axis=0)[0]),
+                                                        float(np.std(correlation_stats[stats_key][0], ddof=1)),
+                                                        float(np.amax(correlation_stats[stats_key], axis=0)[1])))
+
+# Compute Pearson Correlations
+activation_level_stats_keys = sorted(activation_level_stats.keys())
+print("\nPearson Correlation to Interest Level (For all studies)")
+print("========================================")
+for stats_key in activation_level_stats_keys:
+
+    # Compute the Pearson correlation between interest level and average sample average activation level
+
+    pearson_correlation = stats.pearsonr(activation_level_stats[stats_key],interest_level_stats)
+
+    print("%s --- R: %f; P-Value: %f" % (stats_key, pearson_correlation[0], pearson_correlation[1]))
+
+# plot the activation level statistics that against interest level
+for stats_key in activation_level_stats_keys:
+    fig = plt.figure(10)
+    plt.clf()
+
+    # plot the sample interest level compare with average sample average activation
+    plt.plot(activation_level_stats[stats_key],
+             interest_level_stats,
+             "bo", ms=5, label=stats_key)
+
+    # add the x-axis label
+    plt.ylabel("Interest Level")
+    plt.xlabel(stats_key)
+    plt.title("Correlation between Interest Level and \n%s\n" % stats_key)
+
+    #plt.show()
+    save_figure.save(fig, filename="All Studies - Correlations of %s " % (stats_key),
+                     directory="plot_figures", verbose=False)
 
 
 # return back to where the program was executed

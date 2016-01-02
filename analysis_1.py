@@ -256,8 +256,8 @@ print("--- H0: Participants find that CBLA Mode is equally as interesting as pre
 # Alternate Hypothesis
 print("--- H1: Participants find that CBLA Mode is not equally as interesting as prescripted mode when prescripted Mode is on first")
 # Test Data
-sample_1 = prescripted_first_avg
-sample_2 = cbla_second_avg
+sample_1 = cbla_second_avg
+sample_2 = prescripted_first_avg
 print("Sample 1:  ", sample_1, " mean = ", np.mean(sample_1))
 print("Sample 2:  ", sample_2, " mean = ", np.mean(sample_2))
 # Analysis
@@ -272,7 +272,7 @@ else:
         compare_word = 'more'
     else:
         compare_word = 'less'
-    print("Prescripted Mode is %s interesting than CBLA mode when prescripted Mode is on first with %.2f%% confidence.\n"
+    print("CBLA Mode is %s interesting than Prescripted mode when Prescripted Mode is on first with %.2f%% confidence.\n"
           % (compare_word, 100-p_val/2*100))
 
 
@@ -327,4 +327,30 @@ else:
     else:
         compare_word = 'less'
     print("The first segment is %s interesting than the second segment with %.2f%% confidence.\n"
+          % (compare_word, 100-p_val/2*100))
+
+# CBLA Mode vs Prescripted Mode
+print("4. CBLA Mode vs Prescripted Mode (for both segments)")
+# Null Hypothesis
+print("--- H0: Participants find that CBLA Mode is equally as interesting as Prescripted Mode")
+# Alternate Hypothesis
+print("--- H1: Participants find that CBLA Mode is not equally as interesting as the Prescripted Mode")
+# Test Data
+sample_1 = cbla_first_avg + cbla_second_avg
+sample_2 = prescripted_second_avg +prescripted_first_avg
+print("Sample 1:  ", sample_1, " mean = ", np.mean(sample_1))
+print("Sample 2:  ", sample_2, " mean = ", np.mean(sample_2))
+# Analysis
+t_stat, p_val = stats.ttest_rel(sample_1, sample_2)
+print("T-Stat: ", t_stat ,"; P-Value: ", p_val, end='  --->')
+if p_val > p_significant:
+    print("H0 cannot be rejected.\n")
+else:
+    print("H0 rejected.")
+
+    if t_stat > 0:
+        compare_word = 'more'
+    else:
+        compare_word = 'less'
+    print("The CBLA Mode is %s interesting than the Prescripted Mode with %.2f%% confidence.\n"
           % (compare_word, 100-p_val/2*100))
